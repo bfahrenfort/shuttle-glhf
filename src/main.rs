@@ -37,7 +37,7 @@ async fn main(
             .route("/api/v1/queue/add", post(db::update::enqueue))
             .route("/api/v1/queue/peek", get(db::fetch::queue_peek))
             .route("/api/v1/queue/fetch", get(db::fetch::queue_fetch))
-            .route("/api/v1/fetch/:name", post(db::fetch::retrieve))
+            .route("/api/v1/fetch/:name", get(db::fetch::retrieve))
             .route("/login", post(auth::login))
             .with_state(state);
 
@@ -52,7 +52,7 @@ async fn main(
             .route("/api/v1/queue/add", post(db::update::enqueue))
             .route("/api/v1/queue/peek", get(db::fetch::queue_peek))
             .route("/api/v1/queue/fetch", get(db::fetch::queue_fetch))
-            .route("/api/v1/fetch/:name", post(db::fetch::retrieve))
+            .route("/api/v1/fetch/:name", get(db::fetch::retrieve))
             .route("/login", post(auth::login))
             .with_state(state);
 
