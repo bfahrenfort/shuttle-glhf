@@ -55,11 +55,9 @@ where
             .await
             .map_err(|_| AuthError::InvalidToken)?;
 
-        println!("{}", bearer.token());
         // Decode into the unencrypted type
         let token_data = decode::<Claims>(bearer.token(), &KEYS.decoding, &Validation::default())
             .map_err(|_| AuthError::InvalidToken)?;
-        println!("{}", token_data.claims);
 
         Ok(token_data.claims)
     }

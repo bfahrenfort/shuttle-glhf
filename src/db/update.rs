@@ -50,7 +50,6 @@ pub async fn auth_push(
     State(state): State<MyState>,
     data: Claims,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
-    println!("in test");
     match sqlx::query_as::<_, Program>(
         "INSERT INTO programs (program_name, doctype, url) \
             VALUES ($1, $2, $3) \
@@ -62,16 +61,14 @@ pub async fn auth_push(
     .fetch_one(&state.pool)
     .await
     {
-        Ok(_) => (),
-        Err(e) => return Err((StatusCode::BAD_REQUEST, e.to_string())),
-    };
-
-    match sqlx::query_as::<_, Program>("DELETE FROM queue WHERE id=$1")
-        .bind(data.payload.id)
-        .fetch_one(&state.pool)
-        .await
-    {
-        Ok(program) => Ok(Json(program)),
+        Ok(program) => match sqlx::query("DELETE FROM queue WHERE id=$1")
+            .bind(data.payload.id)
+            .execute(&state.pool)
+            .await
+        {
+            Ok(_) => Ok(Json(program)),
+            Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+        },
         Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
     }
 }
