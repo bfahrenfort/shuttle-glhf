@@ -27,9 +27,9 @@ async fn main(
         .await
         .map_err(CustomError::new)?;
 
+    let state = MyState { pool, secrets };
     #[cfg(debug_assertions)]
     {
-        let state = MyState { pool, secrets };
         let router = Router::new()
             .route("/", get(hello_world))
             .route("/api/v1/debug/update", post(db::update::push))
@@ -48,10 +48,11 @@ async fn main(
     {
         let router = Router::new()
             .route("/", get(hello_world))
-            .route("/api/update", get(db::fetch::retrieve))
+            .route("/api/v1/update", get(db::update::auth_push))
             .route("/api/v1/queue/add", post(db::update::enqueue))
             .route("/api/v1/queue/peek", get(db::fetch::queue_peek))
-            .route("/api/fetch/:name", get(db::fetch::retrieve))
+            .route("/api/v1/queue/fetch", get(db::fetch::queue_fetch))
+            .route("/api/v1/fetch/:name", post(db::fetch::retrieve))
             .route("/login", post(auth::login))
             .with_state(state);
 
