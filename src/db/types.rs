@@ -5,7 +5,7 @@ use std::fmt::Display;
 #[derive(Serialize, FromRow)]
 pub struct Program {
     pub id: i32,
-    pub program_name: String,
+    pub program_name: String, // The API deals in absolutes (strings, not enums)
     pub doctype: String,
     pub url: Option<String>,
 }

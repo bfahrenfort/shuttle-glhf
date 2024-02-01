@@ -4,6 +4,8 @@ use super::types::*;
 use crate::auth::types::Claims;
 use crate::state::MyState;
 
+// (UNAUTHORIZED) add Program to the database
+// Debug and unit test use only!
 #[cfg(debug_assertions)]
 pub async fn push(
     State(state): State<MyState>,
@@ -25,6 +27,8 @@ pub async fn push(
     }
 }
 
+// Add to queue
+// Intended use
 pub async fn enqueue(
     State(state): State<MyState>,
     Json(data): Json<QueueNew>,
