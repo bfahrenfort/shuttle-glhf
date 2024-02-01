@@ -50,25 +50,51 @@ pub async fn auth_push(
     State(state): State<MyState>,
     data: Claims,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
-    match sqlx::query_as::<_, Program>(
-        "INSERT INTO programs (program_name, doctype, url) \
+    if data.payload.request_type == "create" {
+        match sqlx::query_as::<_, Program>(
+            "INSERT INTO programs (program_name, doctype, url) \
             VALUES ($1, $2, $3) \
             RETURNING id, program_name, doctype, url",
-    )
-    .bind(&data.payload.program_name)
-    .bind(&data.payload.doctype)
-    .bind(&data.payload.url)
-    .fetch_one(&state.pool)
-    .await
-    {
-        Ok(program) => match sqlx::query("DELETE FROM queue WHERE id=$1")
-            .bind(data.payload.id)
-            .execute(&state.pool)
-            .await
+        )
+        .bind(&data.payload.program_name)
+        .bind(&data.payload.doctype)
+        .bind(&data.payload.url)
+        .fetch_one(&state.pool)
+        .await
         {
-            Ok(_) => Ok(Json(program)),
+            Ok(program) => match sqlx::query("DELETE FROM queue WHERE id=$1")
+                .bind(data.payload.id)
+                .execute(&state.pool)
+                .await
+            {
+                Ok(_) => Ok(Json(data.payload)),
+                Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+            },
             Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
-        },
-        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+        }
+    } else if data.payload.request_type == "update" {
+        match sqlx::query(
+            "UPDATE programs \
+            SET doctype = $1, url = $2 \
+            WHERE program_name = $3", // TODO needs updating when move to multi-entry
+        )
+        .bind(&data.payload.doctype)
+        .bind(&data.payload.url)
+        .bind(&data.payload.program_name)
+        .execute(&state.pool)
+        .await
+        {
+            Ok(_) => match sqlx::query("DELETE FROM queue WHERE id=$1")
+                .bind(data.payload.id)
+                .execute(&state.pool)
+                .await
+            {
+                Ok(_) => Ok(Json(data.payload)),
+                Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+            },
+            Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+        }
+    } else {
+        Err((StatusCode::BAD_REQUEST, "haha".to_string()))
     }
 }
