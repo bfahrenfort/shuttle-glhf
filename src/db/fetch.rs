@@ -18,7 +18,7 @@ pub async fn retrieve(
         .await
     {
         Ok(program) => Ok((StatusCode::OK, Json(program))),
-        Err(e) => Err((StatusCode::BAD_REQUEST, e.to_string())),
+        Err(e) => Err((StatusCode::NOT_FOUND, e.to_string())),
     }
 }
 

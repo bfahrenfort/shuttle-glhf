@@ -30,7 +30,7 @@ pub async fn login(
     let tokens: Vec<String> = sqlx::query_as::<_, Admin>("SELECT * FROM admins")
         .fetch_all(&state.pool)
         .await
-        .map_err(|_| AuthError::BadQueue)?
+        .map_err(|_| AuthError::WrongCredentials)?
         .into_iter()
         .map(|e| e.token)
         .collect();
@@ -73,7 +73,7 @@ pub async fn login(
                 .await
                 .map_err(|_| AuthError::BadQueue)?;
 
-            // TODO display web interface to pick queue items
+            // TODO display web interface to pick queue items?
             let record = Claims {
                 payload: queue_peek[0].clone(),
                 exp,
